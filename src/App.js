@@ -1,25 +1,93 @@
-import logo from './logo.svg';
+import { Component } from 'react';
+import axios from 'axios';
+import SubmitBooklet from "./components/submitBooklet/submitBooklet";
+import BookList from "./components/bookList/bookList";
 import './App.css';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends Component {
+  constructor(props) {
+    super(props)        
+    this.state = {
+      activePage: 'BOOKS',
+      books: [],
+      isAdmin: false,
+      hasMoreBooks: true,
+      pageNumber: 0
+    }
+  }
+
+  baseApiUrl = "http://localhost:8080/books";
+
+  componentDidMount = () => {
+    this.getBooks();
+    this.setIsAdmin();
+    window.addEventListener("scroll", this.handleScroll);
+  }
+
+  componentWillUnmount = () => window.removeEventListener("scroll", this.handleScroll);
+
+  getBooks = async () => {
+    if(this.state.hasMoreBooks) {
+      await axios.get(this.baseApiUrl, { params : { pageNumber: this.state.pageNumber } })
+      .then(({ data }) => {
+        this.setBooks([...this.state.books, ...data.books]);
+        this.setHasMoreBooks(data.hasMoreBooks);
+        this.increasePageNumber();
+      })
+      .catch(e => console.log('ERROR RETRIEVING BOOKS'))
+    }
+  }
+
+  submitBook = async (book) => axios.post(this.baseApiUrl, { book })
+    .then(({ data }) => this.setBooks([...this.state.books, data]))
+    .catch(e => console.log('ERROR SUMBITTING BOOK'))
+
+  editBook = async (book) => axios.patch(`${this.baseApiUrl}/${book._id}`, { book })
+    .then(({ data }) => this.setBooks(this.state.books?.map(b => b._id === data._id ? data : b)))
+    .catch(e => console.log('ERROR EDITING BOOK'))
+
+  deleteBook = async (_id) => axios.delete(`${this.baseApiUrl}/${_id}`, { _id })
+    .then(() => this.setBooks(this.state.books.filter(book => book._id !== _id)))
+    .catch(e => console.log('ERROR DELETING BOOK'))
+
+  handleScroll = () =>  {
+    const scrolledToBottom = window.scrollY + window.innerHeight === document.body.offsetHeight;
+    if( scrolledToBottom && this.state.hasMoreBooks) {
+      this.getBooks();
+    }
+  }
+
+  setBooks = books => this.setState({ books });
+  setPage = activePage => this.setState({ activePage });
+  setHasMoreBooks = hasMoreBooks => this.setState({ hasMoreBooks });
+  increasePageNumber = () => this.setState({ pageNumber: this.state.pageNumber + 1 });
+  resetPageNumber = () => this.setState({ pageNumber: 0 });
+  sanitizeList = bookList => bookList?.filter(book => book.author && book.title && book.paragraphs);
+  setIsAdmin = () => {
+    const adminName = process.env.REACT_APP_ADMIN_NAME.toLowerCase()
+    const isAdmin = window.location.href.split('/')?.pop().toLowerCase() === adminName 
+      || window.location.href.split('=')?.pop().toLowerCase() === adminName;
+    this.setState({ isAdmin });
+  }
+
+  render() { 
+    const views = {
+      'SUBMIT': <SubmitBooklet submitBook={this.submitBook} setPage={this.setPage} /> ,
+      'BOOKS': <BookList 
+                isAdmin={this.state.isAdmin} 
+                books={this.sanitizeList(this.state.books)} 
+                setPage={this.setPage}
+                deleteBook={this.deleteBook}
+                editBook={this.editBook}
+              />
+    }
+
+    return (
+      <div className="App">
+        { views[this.state.activePage] }
+      </div>
+    )
+  }
 }
 
 export default App;

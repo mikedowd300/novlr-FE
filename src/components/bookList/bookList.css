@@ -1,0 +1,28 @@
+.book-list-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: #fff;
+    width:  100%;
+    padding: 24px;
+    padding-bottom: 0;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+  
+  .book-list-header {
+    color: #4d94ff;
+    font-size: 1.75em;
+    font-family: libre baskerville, georgia, serif;
+    letter-spacing: 0.025em;
+    margin-bottom: 24px;
+  }
+  
+  .book-list-wrapper .book-list-header {
+    text-decoration: underline;
+  }
+  
+  .book-list-wrapper .book-list-header:hover {
+    cursor: pointer;
+  }
