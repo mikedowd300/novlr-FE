@@ -10,8 +10,8 @@ class Book extends Component {
     }
   }
 
-  editBook = book => {
-    this.props.editBook(book);
+  editBook = (book, id) => {
+    this.props.editBook(book, id);
     this.setEditable(false);
   }
 
@@ -29,7 +29,7 @@ class Book extends Component {
     const bookComponent = (
       <div className={this.getViewClass()} onClick={this.setView}>
         <div className="paragraph-wrapper" >
-          { book.paragraphs?.map((paragraph, i) => <p className="paragraph" key={`${book._id}-${i}`}>{paragraph}</p>) }
+          { book.paragraphs?.map((paragraph, i) => <p className="paragraph" key={`${book.id}-${i}`}>{paragraph}</p>) }
         </div>
         <div className="author-title">
           <span className="author-label">{`${book.author}, `}</span>

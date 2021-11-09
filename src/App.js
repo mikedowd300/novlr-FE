@@ -16,10 +16,11 @@ class App extends Component {
     }
   }
 
-  baseApiUrl = "http://localhost:8080/books";
+  baseApiUrl = "https://guarded-reef-59469.herokuapp.com";
 
   componentDidMount = () => {
     this.getBooks();
+    this.increasePageNumber();
     this.setIsAdmin();
     window.addEventListener("scroll", this.handleScroll);
   }
@@ -28,32 +29,34 @@ class App extends Component {
 
   getBooks = async () => {
     if(this.state.hasMoreBooks) {
-      await axios.get(this.baseApiUrl, { params : { pageNumber: this.state.pageNumber } })
+      await axios.get(`${this.baseApiUrl}/${this.state.pageNumber}`)
       .then(({ data }) => {
-        this.setBooks([...this.state.books, ...data.books]);
+        const allIds = this.state.books.map(b => b.id);
+        const filteredBooks = data.books.filter(b => !(allIds.includes(b.id)))
+        this.setBooks([...this.state.books, ...filteredBooks]);
         this.setHasMoreBooks(data.hasMoreBooks);
-        this.increasePageNumber();
       })
-      .catch(e => console.log('ERROR RETRIEVING BOOKS'))
+      .catch(e => console.log('ERROR RETRIEVING BOOKS', this.state.pageNumber))
     }
   }
 
-  submitBook = async (book) => axios.post(this.baseApiUrl, { book })
+  submitBook = async (book) => axios.post(this.baseApiUrl, { ...book })
     .then(({ data }) => this.setBooks([...this.state.books, data]))
     .catch(e => console.log('ERROR SUMBITTING BOOK'))
 
-  editBook = async (book) => axios.patch(`${this.baseApiUrl}/${book._id}`, { book })
-    .then(({ data }) => this.setBooks(this.state.books?.map(b => b._id === data._id ? data : b)))
+  editBook = async (book, id) => axios.patch(`${this.baseApiUrl}/${id}`, { ...book })
+    .then(({ data }) => this.setBooks([...this.state.books?.map(b => b.id === data.id ? data : b)]))
     .catch(e => console.log('ERROR EDITING BOOK'))
 
-  deleteBook = async (_id) => axios.delete(`${this.baseApiUrl}/${_id}`, { _id })
-    .then(() => this.setBooks(this.state.books.filter(book => book._id !== _id)))
+  deleteBook = async (id) => axios.delete(`${this.baseApiUrl}/${id}`, { id })
+    .then(() => this.setBooks(this.state.books.filter(book => book.id !== id)))
     .catch(e => console.log('ERROR DELETING BOOK'))
 
   handleScroll = () =>  {
-    const scrolledToBottom = window.scrollY + window.innerHeight === document.body.offsetHeight;
+    const scrolledToBottom = Math.ceil(window.scrollY + window.innerHeight + 2) >= document.body.offsetHeight;
     if( scrolledToBottom && this.state.hasMoreBooks) {
       this.getBooks();
+      this.increasePageNumber();
     }
   }
 
@@ -73,13 +76,13 @@ class App extends Component {
   render() { 
     const views = {
       'SUBMIT': <SubmitBooklet submitBook={this.submitBook} setPage={this.setPage} /> ,
-      'BOOKS': <BookList 
-                isAdmin={this.state.isAdmin} 
-                books={this.sanitizeList(this.state.books)} 
-                setPage={this.setPage}
-                deleteBook={this.deleteBook}
-                editBook={this.editBook}
-              />
+      'BOOKS': <BookList
+          isAdmin={this.state.isAdmin} 
+          books={this.sanitizeList(this.state.books)} 
+          setPage={this.setPage}
+          deleteBook={this.deleteBook}
+          editBook={this.editBook}
+        />
     }
 
     return (

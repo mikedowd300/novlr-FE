@@ -5,7 +5,7 @@ class EditableBook extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      _id: props.book._id,
+      id: props.book.id,
       author: props.book.author,
       title: props.book.title,
       paragraphs: props.book.paragraphs,
@@ -22,12 +22,11 @@ class EditableBook extends Component {
   bookContentChange = event => this.setState({ bookContent: event.target?.value });
   edit = () => {
     const book = {
-      _id: this.state._id,
       author: this.state.author,
       title: this.state.title,
       paragraphs: this.state.bookContent.split('\n')
-    }
-    this.props.editBook(book);
+    }   
+    this.props.editBook(book, this.state.id);
   }
 
   convertParagraphsToContent = () => {
@@ -67,7 +66,7 @@ class EditableBook extends Component {
           <button onClick={() => this.edit()}>
             Edit
           </button>
-          <button onClick={() => this.props.deleteBook(this.state._id)}>
+          <button onClick={() => this.props.deleteBook(this.state.id)}>
             Delete
           </button>
         </div>

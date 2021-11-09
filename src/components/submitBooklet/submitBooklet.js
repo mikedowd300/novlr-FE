@@ -30,6 +30,7 @@ class SubmitBooklet extends Component {
         title,
         paragraphs: bookContent.split('\n')
       }
+      console.log(book);
       this.props.submitBook(book);
       this.props.setPage('BOOKS');
     } else {

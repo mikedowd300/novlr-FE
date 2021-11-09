@@ -9,7 +9,7 @@ function BookList(props) {
         Add the beginning of a book
       </div>
         { 
-          books?.map(book => <Book book={book} key={book._id} isAdmin={isAdmin} deleteBook={deleteBook} editBook={editBook}/>) 
+          books?.map(book => <Book book={book} key={book.id} isAdmin={isAdmin} deleteBook={deleteBook} editBook={editBook}/>) 
         }
     </div>
   );
