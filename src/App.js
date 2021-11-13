@@ -16,7 +16,7 @@ class App extends Component {
     }
   }
 
-  baseApiUrl = "https://guarded-reef-59469.herokuapp.com";
+  baseApiUrl = "https://guarded-reef-59469.herokuapp.com/api";
 
   componentDidMount = () => {
     this.getBooks();
